@@ -106,4 +106,80 @@
     });
   });
 
+  /* ─── Timeline: add tl-visible class for pulse animation ─── */
+  const tlItems = document.querySelectorAll('.timeline-item');
+  if ('IntersectionObserver' in window && tlItems.length) {
+    const tlObs = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('tl-visible');
+          tlObs.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.25 });
+    tlItems.forEach(el => tlObs.observe(el));
+  }
+
+})();
+
+/* ─── Custom Cursor Glow (pointer device only) ─── */
+(function () {
+  if (!window.matchMedia('(pointer: fine)').matches) return;
+
+  const glow = document.getElementById('cursor-glow');
+  const dot  = document.getElementById('cursor-dot');
+  if (!glow || !dot) return;
+
+  let mx = 0, my = 0, gx = 0, gy = 0;
+
+  document.addEventListener('mousemove', e => {
+    mx = e.clientX;
+    my = e.clientY;
+    document.body.classList.add('cursor-ready');
+    dot.style.left = mx + 'px';
+    dot.style.top  = my + 'px';
+  }, { passive: true });
+
+  document.addEventListener('mouseleave', () => {
+    document.body.classList.remove('cursor-ready');
+  });
+
+  (function animGlow() {
+    gx += (mx - gx) * 0.075;
+    gy += (my - gy) * 0.075;
+    glow.style.left = gx + 'px';
+    glow.style.top  = gy + 'px';
+    requestAnimationFrame(animGlow);
+  })();
+
+  /* Expand dot on interactive elements */
+  document.querySelectorAll('a, button, .skill-card, .cert-card, .phil-card, .fact-item, .chip').forEach(el => {
+    el.addEventListener('mouseenter', () => {
+      dot.style.width  = '18px';
+      dot.style.height = '18px';
+      dot.style.background = 'rgba(29,78,216,0.45)';
+    });
+    el.addEventListener('mouseleave', () => {
+      dot.style.width  = '6px';
+      dot.style.height = '6px';
+      dot.style.background = '#1D4ED8';
+    });
+  });
+})();
+
+/* ─── Card 3D Tilt on hover ─── */
+(function () {
+  document.querySelectorAll('.skill-card, .cert-card').forEach(card => {
+    card.addEventListener('mousemove', e => {
+      const r  = card.getBoundingClientRect();
+      const x  = e.clientX - r.left;
+      const y  = e.clientY - r.top;
+      const rx = ((y - r.height / 2) / r.height) * -7;
+      const ry = ((x - r.width  / 2) / r.width)  *  7;
+      card.style.transform = `translateY(-7px) perspective(700px) rotateX(${rx}deg) rotateY(${ry}deg)`;
+    });
+    card.addEventListener('mouseleave', () => {
+      card.style.transform = '';
+    });
+  });
 })();
